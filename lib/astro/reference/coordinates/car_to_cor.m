@@ -1,0 +1,23 @@
+function cor = car_to_cor(car, unix)
+    % car_to_cor: converts Cartesian coordinates to co-rotating spherical coordinates.
+    %
+    %  Inputs:
+    %   car: Cartesian coordinates [x, y, z]
+    %   unix: Unix timestamp (seconds since January 1, 1970)
+    %
+    %  Outputs:
+    %   cor: a 3x1 vector containing the co-rotating spherical coordinates
+    %       [latitude, longitude, radius]'
+
+    theta = sidereal_rotation(unix);
+    R_z = rot_z(-theta);
+    r_eci = car(1:3);
+    r_ecef = R_z * r_eci;
+
+    r_norm = norm(r_ecef);
+    r_xy = sqrt(r_ecef(1) ^ 2 + r_ecef(2) ^ 2);
+    lng = atan2(r_ecef(2) / r_xy, r_ecef(1) / r_xy);
+    lat = asin(r_ecef(3) / r_norm);
+
+    cor = [lat, lng, r_norm]';
+end
