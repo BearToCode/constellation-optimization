@@ -7,5 +7,5 @@ function unix = jd_to_unix(jd)
     % Output:
     %   unix: a scalar value representing the Unix time in seconds since January 1, 1970
 
-    unix = (jd - 2440587.5) * constants.JulianDay;
+    unix = (jd - 2440587.5) * constants.julian_day;
 end

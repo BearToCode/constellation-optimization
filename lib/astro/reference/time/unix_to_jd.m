@@ -7,5 +7,5 @@ function jd = unix_to_jd(unix_time)
     % Output:
     %   jd: the corresponding Julian Date
 
-    jd = unix_time / constants.JulianDay + 2440587.5;
+    jd = unix_time / constants.julian_day + 2440587.5;
 end

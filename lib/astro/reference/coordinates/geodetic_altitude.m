@@ -11,5 +11,5 @@ function alt = geodetic_altitude(cor)
     lat = cor(1);
     r = cor(3);
 
-    alt = r - sqrt(constants.Earth.R_eq ^ 2 * cos(lat) ^ 2 + constants.Earth.R_p ^ 2 * sin(lat) ^ 2);
+    alt = r - sqrt(constants.Earth.r_eq ^ 2 * cos(lat) ^ 2 + constants.Earth.r_p ^ 2 * sin(lat) ^ 2);
 end

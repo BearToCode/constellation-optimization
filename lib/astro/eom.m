@@ -1,18 +1,20 @@
-function x_dot = eom(t, x, acc_fun)
-    % eom: calculates the time derivative of the state vector for a given state and acceleration function.
+function x_dot_fun = eom(acc_fun)
+    % eom: obtain the equation of motion of motion given the acceleration function.
     %
     % Inputs:
-    %   t: the current time
-    %   x: a 6x1 vector containing the current state (position and velocity)
     %   acc_fun: a function handle that takes the current time and state and returns the acceleration
     %
     % Output:
-    %   x_dot: a 6x1 vector containing the time derivative of the state vector
+    %   x_dot_fun: a function handle that takes the current state and returns its time derivative
 
-    position = x(1:3);
-    velocity = x(4:6);
+    function x_dot = f(t, x)
+        position = x(1:3);
+        velocity = x(4:6);
 
-    acceleration = acc_fun(t, position);
+        acceleration = acc_fun(t, position);
 
-    x_dot = [velocity; acceleration];
+        x_dot = [velocity; acceleration];
+    end
+
+    x_dot_fun = @f;
 end
