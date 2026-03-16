@@ -32,14 +32,17 @@ function kep = car_to_kep(car, mu)
     % Node vector
     N = cross([0 0 1]', h) / norm(cross([0 0 1]', h));
     % RAAN
-    O = (N(2) >= 0) * acos(N(1)) + (N(2) < 0) * (2 * pi - acos(N(1)));
+    O = (N(2) >= 0) * acos(N(1)) + ...
+        (N(2) < 0) * (2 * pi - acos(N(1)));
     % Argument of perigee
-    o = (e(3) >= 0) * acos(dot(N, e) / e_norm) + (e(3) < 0) * (2 * pi - acos(dot(N, e) / e_norm));
+    o = (e(3) >= 0) * acos(dot(N, e) / e_norm) + ...
+        (e(3) < 0) * (2 * pi - acos(dot(N, e) / e_norm));
 
     v_r = dot(r, v) / r_norm;
 
     % True anomaly
-    t = (v_r >= 0) * acos(dot(e, r) / (e_norm * r_norm)) + (v_r < 0) * (2 * pi - acos(dot(e, r) / (e_norm * r_norm)));
+    t = (v_r >= 0) * acos(dot(e, r) / (e_norm * r_norm)) + ...
+        (v_r < 0) * (2 * pi - acos(dot(e, r) / (e_norm * r_norm)));
 
     kep = [a e_norm i O o t]';
 end
