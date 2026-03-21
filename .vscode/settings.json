@@ -1,3 +1,12 @@
 {
-  "cSpell.words": ["addpath", "arrayfun", "genpath", "RAAN"]
+  "cSpell.words": [
+    "addpath",
+    "arrayfun",
+    "genpath",
+    "geoplot",
+    "newmap",
+    "projcrs",
+    "RAAN",
+    "readgeotable"
+  ]
 }
