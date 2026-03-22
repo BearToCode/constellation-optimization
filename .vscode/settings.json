@@ -7,6 +7,7 @@
     "newmap",
     "projcrs",
     "RAAN",
-    "readgeotable"
+    "readgeotable",
+    "vecnorm"
   ]
 }
