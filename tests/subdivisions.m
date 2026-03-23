@@ -3,8 +3,11 @@
 % Close and clear all
 clc; clear; close all;
 
+% Import necessary libraries
+addpath(genpath('../lib'))
+
 triangles = icosahedron();
-triangles = subdivide(triangles, 3);
+triangles = subdivide(triangles, 4);
 
 triangles_count = size(triangles, 2) / 3;
 points = arrayfun(@(idx) triangle_midpoint(triangles(:, (idx - 1) * 3 + 1:idx * 3)), 1:triangles_count, UniformOutput = false);

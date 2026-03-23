@@ -4,10 +4,14 @@
     "arrayfun",
     "genpath",
     "geoplot",
+    "geopointshape",
+    "isinterior",
     "newmap",
+    "numel",
     "projcrs",
     "RAAN",
     "readgeotable",
+    "shapefile",
     "vecnorm"
   ]
 }
