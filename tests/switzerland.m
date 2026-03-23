@@ -38,3 +38,4 @@ newmap(proj)
 geoplot(country)
 hold on
 geoplot(inside_geo_points, 'bo')
+savefig("switzerland.png", [4 3])

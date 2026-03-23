@@ -2,6 +2,7 @@
   "cSpell.words": [
     "addpath",
     "arrayfun",
+    "exportgraphics",
     "genpath",
     "geoplot",
     "geopointshape",
@@ -11,7 +12,9 @@
     "projcrs",
     "RAAN",
     "readgeotable",
+    "savefig",
     "shapefile",
+    "strcat",
     "vecnorm"
   ]
 }
