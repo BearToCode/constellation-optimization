@@ -17,9 +17,10 @@ f = eom(@(t, x) ...
     point_mass_acceleration(x(1:3), constants.Earth.mu) + ...
     j2_acceleration(x(1:3), constants.Earth.mu, constants.Earth.r, constants.Earth.j2) ...
 );
-[t, x] = ode45(f, [0, 3600], initial_state);
+[t, x] = ode78(f, [0, 3600 * 4], initial_state, odeset(RelTol = 1e-6, AbsTol = 1e-8));
 
 x_kep = car_to_kep(x, constants.Earth.mu);
+x_cor = car_to_cor(x', t);
 
 % Plot the 3d trajectory
 figure;
@@ -62,3 +63,10 @@ plot(t, x_kep(:, 6), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$\theta$ [rad]', Interpreter = 'latex');
 grid on;
+
+% Plot the ground track
+figure;
+worldmap('World');
+load coastlines
+plotm(coastlat, coastlon, 'k', LineWidth = 2);
+plotm(rad2deg(x_cor(1, :)), rad2deg(x_cor(2, :)), 'r', LineWidth = 2);

@@ -2,6 +2,8 @@
   "cSpell.words": [
     "addpath",
     "arrayfun",
+    "coastlat",
+    "coastlon",
     "exportgraphics",
     "genpath",
     "geoplot",
@@ -9,12 +11,16 @@
     "isinterior",
     "newmap",
     "numel",
+    "odeset",
+    "plotm",
     "projcrs",
     "RAAN",
     "readgeotable",
     "savefig",
     "shapefile",
     "strcat",
-    "vecnorm"
+    "trapz",
+    "vecnorm",
+    "worldmap"
   ]
 }

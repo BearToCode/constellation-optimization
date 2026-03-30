@@ -2,12 +2,19 @@ function cor = car_to_cor(car, unix)
     % car_to_cor: converts Cartesian coordinates to co-rotating spherical coordinates.
     %
     %  Inputs:
-    %   car: Cartesian coordinates [x, y, z]
+    %   car: Cartesian coordinates [x, y, z]'
     %   unix: Unix timestamp (seconds since January 1, 1970)
     %
     %  Outputs:
     %   cor: a 3x1 vector containing the co-rotating spherical coordinates
     %       [latitude, longitude, radius]'
+
+    % If using matrices, use arrayfun to apply the conversion to each column of car and unix.
+    if size(car, 2) > 1
+        cor = arrayfun(@(i) car_to_cor(car(:, i), unix(i)), 1:size(car, 2), UniformOutput = false);
+        cor = cell2mat(cor);
+        return
+    end
 
     theta = sidereal_rotation(unix);
     R_z = rot_z(-theta);
