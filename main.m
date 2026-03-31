@@ -44,7 +44,7 @@ fprintf('Minimum elevation: \t%.2f deg\n', rad2deg(settings.min_elevation))
 
 fprintf('================= WORLD SETTINGS =================\n')
 
-settings.country = "Philippines"; % Country to be covered by the constellation.
+settings.country = "Georgia"; % Country to be covered by the constellation.
 settings.sample_points = 5e5; % Number of sample points to generate on Earth.
 
 % Extract country geometry from shapefile
@@ -157,6 +157,7 @@ function f = get_objective_function(settings)
         max_coverage = (settings.tf - settings.ti) * numel(settings.sample_points);
         % Integrate the coverage over time and subtract from the maximum possible coverage to get the cost
         cost = max_coverage - trapz(t, coverage_over_time);
+        trapz(t, coverage_over_time)
     end
 
     f = @objective_function;

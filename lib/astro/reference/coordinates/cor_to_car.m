@@ -16,7 +16,7 @@ function car = cor_to_car(cor, unix)
     theta = sidereal_rotation(unix);
     R_z = rot_z(theta);
     r_ecef = [r * cos(lat) * cos(lng); r * cos(lat) * sin(lng); r * sin(lat)];
-    r_eci = R_z' * r_ecef;
+    r_eci = R_z * r_ecef;
 
     car = r_eci;
 end
