@@ -9,6 +9,13 @@ function car = kep_to_car(kep, mu)
     % Output:
     %   car: a 6x1 vector containing the Cartesian state (position and velocity)
 
+    % Support multiple state vectors
+    if size(kep, 2) > 1
+        car = arrayfun(@(i) kep_to_car(kep(:, i), mu), 1:size(kep, 2), 'UniformOutput', false);
+        car = cell2mat(car);
+        return;
+    end
+
     a = kep(1);
     e = kep(2);
     i = kep(3);

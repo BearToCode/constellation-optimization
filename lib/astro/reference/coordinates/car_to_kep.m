@@ -11,8 +11,8 @@ function kep = car_to_kep(car, mu)
 
     % Support multiple state vectors
     if size(car, 2) > 1
-        kep = arrayfun(@(i) car_to_kep(car(i, :)', mu)', 1:size(car, 1), 'UniformOutput', false);
-        kep = cell2mat(kep');
+        kep = arrayfun(@(i) car_to_kep(car(:, i), mu), 1:size(car, 2), 'UniformOutput', false);
+        kep = cell2mat(kep);
         return;
     end
 

@@ -20,7 +20,7 @@ f = eom(@(t, x) ...
 );
 [t, x] = ode78(f, [ti, tf], initial_state, odeset(RelTol = 1e-6, AbsTol = 1e-8));
 
-x_kep = car_to_kep(x, constants.Earth.mu);
+x_kep = car_to_kep(x', constants.Earth.mu);
 x_cor = car_to_cor(x', t);
 
 % Plot the 3d trajectory
@@ -35,32 +35,32 @@ axis equal;
 % Plot the Keplerian elements in 6 subplots
 figure;
 subplot(3, 2, 1);
-plot(t, x_kep(:, 1), LineWidth = 2);
+plot(t, x_kep(1, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$a$ [m]', Interpreter = 'latex');
 grid on;
 subplot(3, 2, 2);
-plot(t, x_kep(:, 2), LineWidth = 2);
+plot(t, x_kep(2, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$e$ [-]', Interpreter = 'latex');
 grid on;
 subplot(3, 2, 3);
-plot(t, x_kep(:, 3), LineWidth = 2);
+plot(t, x_kep(3, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$i$ [rad]', Interpreter = 'latex');
 grid on;
 subplot(3, 2, 4);
-plot(t, x_kep(:, 4), LineWidth = 2);
+plot(t, x_kep(4, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$\Omega$ [rad]', Interpreter = 'latex');
 grid on;
 subplot(3, 2, 5);
-plot(t, x_kep(:, 5), LineWidth = 2);
+plot(t, x_kep(5, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$\omega$ [rad]', Interpreter = 'latex');
 grid on;
 subplot(3, 2, 6);
-plot(t, x_kep(:, 6), LineWidth = 2);
+plot(t, x_kep(6, :), LineWidth = 2);
 xlabel('Time [s]');
 ylabel('$\theta$ [rad]', Interpreter = 'latex');
 grid on;

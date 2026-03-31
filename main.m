@@ -89,75 +89,9 @@ fprintf('Absolute tolerance: \t%.2e\n', settings.absolute_tolerance)
 % OBJECTIVE FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-f = get_objective_function(settings);
+f = constellation_obj_fun(settings);
 
-initial_state = kep_to_car([6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]', constants.Earth.mu);
+initial_state = [6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]';
 
 y0 = [initial_state; initial_state; initial_state];
 cost = f(y0);
-
-function f = get_objective_function(settings)
-
-    function score = compute_coverage_score(t, y)
-        sat_states = reshape(y, 6, settings.num_sats);
-        points_covered = zeros(numel(settings.points), 1);
-
-        points = settings.points;
-        min_elevation = settings.min_elevation;
-
-        for idx = 1:settings.num_sats
-            sat_state = sat_states(:, idx);
-            sat_pos = sat_state(1:3);
-
-            sat_points_covered = zeros(numel(points), 1);
-
-            for p = 1:numel(points)
-                point_car = cor_to_car([deg2rad(points(p).Latitude), ...
-                                            deg2rad(points(p).Longitude), ...
-                                            constants.Earth.r]', t);
-                sat_points_covered(p) = point_is_visible(sat_pos, point_car, min_elevation);
-            end
-
-            points_covered = sat_points_covered | points_covered;
-        end
-
-        score = sum(points_covered);
-
-    end
-
-    % EOM for a single satellite
-    f_sat = eom(@(t, x) ...
-        point_mass_acceleration(x(1:3), constants.Earth.mu) + ...
-        j2_acceleration(x(1:3), constants.Earth.mu, constants.Earth.r, constants.Earth.j2) ...
-    );
-
-    % EOM for the constellation.
-    % The state y has shape (6 * num_sats, 1) and contains the Cartesian state of each satellite
-    function y_dot = constellation_eom(t, y)
-        y_dot = zeros(size(y));
-
-        for idx = 1:settings.num_sats
-            indices = (idx - 1) * 6 + (1:6);
-            y_dot(indices) = f_sat(t, y(indices));
-        end
-
-    end
-
-    function cost = objective_function(y0)
-        % Integrate the constellation EOM
-        [t, y] = settings.integrator(@constellation_eom, ...
-            [settings.ti, settings.tf], ...
-            y0, ...
-            odeset(RelTol = settings.relative_tolerance, AbsTol = settings.absolute_tolerance) ...
-        );
-
-        coverage_over_time = arrayfun(@(i) compute_coverage_score(t(i), y(i, :)'), 1:length(t));
-        stairs(t, coverage_over_time);
-
-        max_coverage = (settings.tf - settings.ti) * numel(settings.sample_points);
-        % Integrate the coverage over time and subtract from the maximum possible coverage to get the cost
-        cost = max_coverage - trapz(t, coverage_over_time);
-    end
-
-    f = @objective_function;
-end
