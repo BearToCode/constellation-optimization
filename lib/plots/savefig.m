@@ -13,7 +13,10 @@ function savefig(filename, size)
 
     starting_pos = fig.Position;
 
-    base_unit = 300; % [px]
+    s = settings();
+    scale_factor = s.matlab.desktop.DisplayScaleFactor.ActiveValue;
+
+    base_unit = 150 * scale_factor; % [px]
 
     width = size(1) * base_unit;
     height = size(2) * base_unit;

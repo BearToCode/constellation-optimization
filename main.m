@@ -33,7 +33,7 @@ fprintf('Final time:   \t\t%d-%02d-%02d %02d:%02d:%02d\n', ...
 fprintf('================== S/C SETTINGS ==================\n')
 
 settings.num_sats = 3; % Number of satellites of the constellation
-settings.min_elevation = deg2rad(20); % Minimum elevation angle for coverage [rad]
+settings.min_elevation = deg2rad(30); % Minimum elevation angle for coverage [rad]
 
 fprintf('Number of satellites: \t%d\n', settings.num_sats)
 fprintf('Minimum elevation: \t%.2f deg\n', rad2deg(settings.min_elevation))
@@ -44,8 +44,8 @@ fprintf('Minimum elevation: \t%.2f deg\n', rad2deg(settings.min_elevation))
 
 fprintf('================= WORLD SETTINGS =================\n')
 
-settings.country = "Georgia"; % Country to be covered by the constellation.
-settings.sample_points = 5e5; % Number of sample points to generate on Earth.
+settings.country = "Switzerland"; % Country to be covered by the constellation.
+settings.sample_points = 2e5; % Number of sample points to generate on Earth.
 
 % Extract country geometry from shapefile
 countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
@@ -157,7 +157,6 @@ function f = get_objective_function(settings)
         max_coverage = (settings.tf - settings.ti) * numel(settings.sample_points);
         % Integrate the coverage over time and subtract from the maximum possible coverage to get the cost
         cost = max_coverage - trapz(t, coverage_over_time);
-        trapz(t, coverage_over_time)
     end
 
     f = @objective_function;

@@ -70,3 +70,4 @@ figure;
 worldmap('World');
 load coastlines
 plotm(coastlat, coastlon, 'k', LineWidth = 2);
+plotm(rad2deg(x_cor(1, :)), rad2deg(x_cor(2, :)), 'r', LineWidth = 2);

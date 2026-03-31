@@ -4,12 +4,12 @@
 clc; clear; close all;
 
 % Import necessary libraries
-addpath(genpath('../lib'))
+addpath(genpath('./lib'))
 
 target_country = "Switzerland";
 
 % Extract country geometry from shapefile
-countries = readgeotable("../data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
+countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
 country = geocode(target_country, countries);
 country_shape = country.Shape;
 country_area = area(country_shape);
@@ -17,7 +17,7 @@ country_area = area(country_shape);
 disp("Country area (sq km): " + num2str(country_area / 1e6))
 
 % Generate sample points
-unit_points = fibonacci_sphere(5e5);
+unit_points = fibonacci_sphere(2e5);
 
 % Convert to spherical coordinates
 [az, el] = cart2sph(unit_points(1, :), unit_points(2, :), unit_points(3, :));
