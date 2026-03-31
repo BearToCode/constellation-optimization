@@ -12,6 +12,7 @@
     "newmap",
     "numel",
     "odeset",
+    "parfor",
     "plotm",
     "projcrs",
     "RAAN",

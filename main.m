@@ -44,7 +44,7 @@ fprintf('Minimum elevation: \t%.2f deg\n', rad2deg(settings.min_elevation))
 
 fprintf('================= WORLD SETTINGS =================\n')
 
-settings.country = "Switzerland"; % Country to be covered by the constellation.
+settings.country = "Philippines"; % Country to be covered by the constellation.
 settings.sample_points = 5e5; % Number of sample points to generate on Earth.
 
 % Extract country geometry from shapefile
@@ -91,17 +91,10 @@ fprintf('Absolute tolerance: \t%.2e\n', settings.absolute_tolerance)
 
 f = get_objective_function(settings);
 
-initial_state = [+6314514.874350373; % Position [m]
-                 +3126065.2383962893;
-                 -2.0526284983191623;
-                 -2584.1416403047383; % Velocity [m/s]
-                 +4834.0507909568605;
-                 +5113.048157234863];
+initial_state = kep_to_car([6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]', constants.Earth.mu);
 
 y0 = [initial_state; initial_state; initial_state];
-tic
 cost = f(y0);
-toc
 
 function f = get_objective_function(settings)
 
@@ -109,17 +102,21 @@ function f = get_objective_function(settings)
         sat_states = reshape(y, 6, settings.num_sats);
         points_covered = zeros(numel(settings.points), 1);
 
+        points = settings.points;
+        min_elevation = settings.min_elevation;
+
         for idx = 1:settings.num_sats
             sat_state = sat_states(:, idx);
             sat_pos = sat_state(1:3);
 
-            sat_points_covered = arrayfun(@(p) ...
-                point_is_visible(sat_pos, ...
-                cor_to_car([settings.points(p).Latitude, ...
-                            settings.points(p).Longitude, ...
-                            constants.Earth.r]', t), ...
-                settings.min_elevation), ...
-                1:numel(settings.points))';
+            sat_points_covered = zeros(numel(points), 1);
+
+            for p = 1:numel(points)
+                point_car = cor_to_car([deg2rad(points(p).Latitude), ...
+                                            deg2rad(points(p).Longitude), ...
+                                            constants.Earth.r]', t);
+                sat_points_covered(p) = point_is_visible(sat_pos, point_car, min_elevation);
+            end
 
             points_covered = sat_points_covered | points_covered;
         end
