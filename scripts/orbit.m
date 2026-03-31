@@ -6,12 +6,12 @@ clc; clear; close all;
 % Import necessary libraries
 addpath(genpath('../lib'))
 
-initial_state = kep_to_car([6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]', constants.Earth.mu);
+initial_state = kep2eci([6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]', constants.Earth.mu);
 
 ti_jd = 2461123.18064; % Initial time in Julian Date
 simulation_time = 7 * 3600; % Simulation time [s]
 
-ti = jd_to_unix(ti_jd); % Initial time [s]
+ti = jd2unix(ti_jd); % Initial time [s]
 tf = ti + simulation_time; % Final time [s]
 
 f = eom(@(t, x) ...
@@ -20,8 +20,8 @@ f = eom(@(t, x) ...
 );
 [t, x] = ode78(f, [ti, tf], initial_state, odeset(RelTol = 1e-6, AbsTol = 1e-8));
 
-x_kep = car_to_kep(x', constants.Earth.mu);
-x_cor = car_to_cor(x', t);
+x_kep = eci2kep(x', constants.Earth.mu);
+x_cor = eci2ecef(x', t);
 
 % Plot the 3d trajectory
 figure;

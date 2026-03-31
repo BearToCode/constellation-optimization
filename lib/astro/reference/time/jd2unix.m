@@ -1,5 +1,5 @@
-function unix = jd_to_unix(jd)
-    % jd_to_unix: converts Julian Date to Unix time.
+function unix = jd2unix(jd)
+    % jd2unix: converts Julian Date to Unix time.
     %
     % Inputs:
     %   jd: a scalar value representing the Julian Date

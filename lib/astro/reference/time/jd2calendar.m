@@ -1,5 +1,5 @@
-function [year, month, day, hour, minute, second] = jd_to_calendar(jd)
-    % jd_to_calendar: converts a Julian Date to a calendar date and time.
+function [year, month, day, hour, minute, second] = jd2calendar(jd)
+    % jd2calendar: converts a Julian Date to a calendar date and time.
     %
     % Inputs:
     %   jd: the Julian Date to be converted

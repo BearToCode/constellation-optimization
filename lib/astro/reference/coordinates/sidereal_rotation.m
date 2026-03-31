@@ -7,7 +7,7 @@ function rotation = sidereal_rotation(unix)
     %  Outputs:
     %   rotation: sidereal rotation in radians
 
-    jd = unix_to_jd(unix);
+    jd = unix2jd(unix);
     d = jd - 2451545.0; % Days since J2000
     jd0 = floor(jd - 0.5) + 0.5; % Julian date at previous midnight
     d0 = jd0 - 2451545.0; % Days since J2000 at previous midnight

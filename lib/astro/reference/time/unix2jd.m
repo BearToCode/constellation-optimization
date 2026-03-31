@@ -1,5 +1,5 @@
-function jd = unix_to_jd(unix_time)
-    % unix_to_jd: converts a Unix timestamp to Julian Date.
+function jd = unix2jd(unix_time)
+    % unix2jd: converts a Unix timestamp to Julian Date.
     %
     % Inputs:
     %   unix_time: a scalar value representing the Unix timestamp (seconds since January 1, 1970)

@@ -13,11 +13,11 @@ fprintf('================== TIME SETTINGS =================\n')
 ti_jd = 2461123.18064; % Initial time in Julian Date
 simulation_time = 7 * 3600; % Simulation time [s]
 
-settings.ti = jd_to_unix(ti_jd); % Initial time [s]
+settings.ti = jd2unix(ti_jd); % Initial time [s]
 settings.tf = settings.ti + simulation_time; % Final time [s]
 
-[ti_year, ti_month, ti_day, ti_hour, ti_minute, ti_second] = jd_to_calendar(ti_jd);
-[tf_year, tf_month, tf_day, tf_hour, tf_minute, tf_second] = jd_to_calendar(unix_to_jd(settings.tf));
+[ti_year, ti_month, ti_day, ti_hour, ti_minute, ti_second] = jd2calendar(ti_jd);
+[tf_year, tf_month, tf_day, tf_hour, tf_minute, tf_second] = jd2calendar(unix2jd(settings.tf));
 
 fprintf('Initial time: \t\t%d-%02d-%02d %02d:%02d:%02d\n', ...
     ti_year, ti_month, ti_day, ti_hour, ti_minute, ti_second ...

@@ -1,8 +1,8 @@
-function kep = car_to_kep(car, mu)
-    % car_to_kep: converts Cartesian state vectors to Keplerian orbital elements.
+function kep = eci2kep(car, mu)
+    % eci2kep: converts ECI state vectors to Keplerian orbital elements.
     %
     %  Inputs:
-    %   car: a 6x1 vector containing the Cartesian state (position and velocity)
+    %   car: a 6x1 vector containing the ECI state (position and velocity)
     %   mu: the gravitational parameter of the central body
     %
     % Output:
@@ -11,7 +11,7 @@ function kep = car_to_kep(car, mu)
 
     % Support multiple state vectors
     if size(car, 2) > 1
-        kep = arrayfun(@(i) car_to_kep(car(:, i), mu), 1:size(car, 2), 'UniformOutput', false);
+        kep = arrayfun(@(i) eci2kep(car(:, i), mu), 1:size(car, 2), 'UniformOutput', false);
         kep = cell2mat(kep);
         return;
     end

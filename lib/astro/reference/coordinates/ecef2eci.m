@@ -1,12 +1,12 @@
-function car = cor_to_car(cor, unix)
-    % cor_to_car: converts co-rotating spherical coordinates to Cartesian coordinates.
+function car = ecef2eci(cor, unix)
+    % ecef2eci: converts ECEF coordinates to ECI coordinates.
     %
     %  Inputs:
-    %   cor: Co-rotating coordinates [latitude, longitude, radius]'
+    %   cor: ECEF coordinates [x, y, z]'
     %   unix: Unix timestamp (seconds since January 1, 1970)
     %
     %  Outputs:
-    %   car: a 3x1 vector containing the Cartesian coordinates
+    %   car: a 3x1 vector containing the ECI coordinates
     %       [x, y, z]'
 
     lat = cor(1);

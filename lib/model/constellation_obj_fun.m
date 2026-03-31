@@ -25,9 +25,9 @@ function f = constellation_obj_fun(settings)
             sat_points_covered = zeros(numel(points), 1);
 
             for p = 1:numel(points)
-                point_car = cor_to_car([deg2rad(points(p).Latitude), ...
-                                            deg2rad(points(p).Longitude), ...
-                                            constants.Earth.r]', t);
+                point_car = ecef2eci([deg2rad(points(p).Latitude), ...
+                                          deg2rad(points(p).Longitude), ...
+                                          constants.Earth.r]', t);
                 sat_points_covered(p) = point_is_visible(sat_pos, point_car, min_elevation);
             end
 
@@ -61,7 +61,7 @@ function f = constellation_obj_fun(settings)
     function cost = impl(y0)
         % Convert the initial state to cartesian
         y0 = reshape(y0, 6, settings.num_sats);
-        y0 = kep_to_car(y0, constants.Earth.mu);
+        y0 = kep2eci(y0, constants.Earth.mu);
         y0 = reshape(y0, [], 1);
 
         % Integrate the constellation EOM
