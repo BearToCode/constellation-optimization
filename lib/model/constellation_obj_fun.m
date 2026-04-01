@@ -15,21 +15,16 @@ function f = constellation_obj_fun(settings)
         sat_states = reshape(y, 6, settings.num_sats);
         points_covered = zeros(numel(settings.points), 1);
 
-        points = settings.points;
-        min_elevation = settings.min_elevation;
-
         for idx = 1:settings.num_sats
             sat_state = sat_states(:, idx);
-            sat_pos = sat_state(1:3);
+            sat_pos_eci = sat_state(1:3);
+            sat_pos_ecef = eci2ecef(sat_pos_eci, t);
 
-            sat_points_covered = zeros(numel(points), 1);
+            sat_points_covered = zeros(numel(settings.points), 1);
 
-            for p = 1:numel(points)
-                coords = [deg2rad(points(p).Latitude), deg2rad(points(p).Longitude)]';
-                r = geodetic_radius(coords);
-
-                point_car = geo2eci([coords(1), coords(2), r]', t);
-                sat_points_covered(p) = point_is_visible(sat_pos, point_car, min_elevation);
+            for p = 1:size(settings.points, 2)
+                point_ecef = settings.points(:, p);
+                sat_points_covered(p) = point_is_visible(sat_pos_ecef, point_ecef, settings.min_elevation);
             end
 
             points_covered = sat_points_covered | points_covered;

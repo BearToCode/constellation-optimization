@@ -65,7 +65,17 @@ function settings = config()
     fprintf("Points inside country: \t%d\n", numel(inside_geo_points))
     fprintf("Area per point: \t%.2f km²\n", area_per_point / 1e6)
 
-    settings.points = inside_geo_points; % Points to be covered by the constellation
+    % Points to be used for coverage evaluation, converted to ECEF coordinates
+    settings.points = arrayfun( ...
+        @(p) geo2ecef([
+                   deg2rad(inside_geo_points(p).Latitude);
+                   deg2rad(inside_geo_points(p).Longitude);
+                   geodetic_radius([
+                     deg2rad(inside_geo_points(p).Latitude);
+                     deg2rad(inside_geo_points(p).Longitude)
+                     ])
+    ]), 1:numel(inside_geo_points), UniformOutput = false);
+    settings.points = cell2mat(settings.points);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % INTEGRATION SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
