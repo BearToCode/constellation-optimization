@@ -25,9 +25,10 @@ function f = constellation_obj_fun(settings)
             sat_points_covered = zeros(numel(points), 1);
 
             for p = 1:numel(points)
-                point_car = ecef2eci([deg2rad(points(p).Latitude), ...
-                                          deg2rad(points(p).Longitude), ...
-                                          constants.Earth.r]', t);
+                coords = [deg2rad(points(p).Latitude), deg2rad(points(p).Longitude)]';
+                r = geodetic_radius(coords);
+
+                point_car = geo2eci([coords(1), coords(2), r]', t);
                 sat_points_covered(p) = point_is_visible(sat_pos, point_car, min_elevation);
             end
 
@@ -35,24 +36,6 @@ function f = constellation_obj_fun(settings)
         end
 
         score = sum(points_covered);
-
-    end
-
-    % EOM for a single satellite
-    f_sat = eom(@(t, x) ...
-        point_mass_acceleration(x(1:3), constants.Earth.mu) + ...
-        j2_acceleration(x(1:3), constants.Earth.mu, constants.Earth.r, constants.Earth.j2) ...
-    );
-
-    % EOM for the constellation.
-    % The state y has shape (6 * num_sats, 1) and contains the Cartesian state of each satellite
-    function y_dot = constellation_eom(t, y)
-        y_dot = zeros(size(y));
-
-        for idx = 1:settings.num_sats
-            indices = (idx - 1) * 6 + (1:6);
-            y_dot(indices) = f_sat(t, y(indices));
-        end
 
     end
 
@@ -65,16 +48,11 @@ function f = constellation_obj_fun(settings)
         y0 = reshape(y0, [], 1);
 
         % Integrate the constellation EOM
-        [t, y] = settings.integrator(@constellation_eom, ...
-            [settings.ti, settings.tf], ...
-            y0, ...
-            odeset(RelTol = settings.relative_tolerance, AbsTol = settings.absolute_tolerance) ...
-        );
+        [t, y] = propagate_constellation(y0, settings);
 
         coverage_over_time = arrayfun(@(i) compute_coverage_score(t(i), y(i, :)'), 1:length(t));
-        stairs(t, coverage_over_time);
 
-        max_coverage = (settings.tf - settings.ti) * numel(settings.sample_points);
+        max_coverage = (settings.tf - settings.ti) * numel(settings.points);
         % Integrate the coverage over time and subtract from the maximum possible coverage to get the cost
         cost = max_coverage - trapz(t, coverage_over_time);
     end

@@ -17,6 +17,8 @@
     "projcrs",
     "RAAN",
     "readgeotable",
+    "repelem",
+    "repmat",
     "savefig",
     "shapefile",
     "strcat",

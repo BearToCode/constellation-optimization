@@ -1,8 +1,9 @@
-function car = ecef2eci(cor, unix)
-    % ecef2eci: converts ECEF coordinates to ECI coordinates.
+function car = geo2eci(cor, unix)
+    % geo2eci: converts geographic coordinates to ECI coordinates.
     %
     %  Inputs:
-    %   cor: ECEF coordinates [x, y, z]'
+    %   cor: geographic coordinates in the form of a 3x1 vector
+    %       [latitude, longitude, radius]'
     %   unix: Unix timestamp (seconds since January 1, 1970)
     %
     %  Outputs:
