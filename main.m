@@ -13,41 +13,67 @@ settings = config();
 fprintf('=============== OBJECTIVE FUNCTION ===============\n')
 
 % semi-major axis, eccentricity, inclination, RAAN, argument of perigee, mean anomaly, true anomaly
-lb = repmat([6578e3, 0, deg2rad(48), 0, 0, 0]', settings.num_sats, 1);
-ub = repmat([7178e3, 0.005, deg2rad(90), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
+lb = repmat([6578e3, 0, deg2rad(46), 0, 0, 0]', settings.num_sats, 1);
+ub = repmat([7178e3, 0.025, deg2rad(180 - 46), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
 
 % Construct the objective function with the given settings
 f = constellation_obj_fun(settings);
 
-y0 = repmat([6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]', settings.num_sats, 1);
+% Consider a random initial solution
+y0 = [6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]';
 
 tic
-initial_cost = f(y0);
+initial_cost = f(repmat(y0, settings.num_sats, 1));
 dt = toc;
 
 fprintf('Initial cost: \t\t%d\n', initial_cost)
 fprintf('Computation time: \t%.2f s\n', dt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OPTIMIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BOUNDEDNESS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fprintf('================== OPTIMIZATION ==================\n')
+fprintf('================== BOUNDEDNESS ===================\n')
 
-% Use the genetic algorithm to optimize the constellation
-options = optimoptions('ga', ...
-    PopulationSize = 100, ...
-    MaxGenerations = 50, ...
-    Display = 'iter', ...
-    UseParallel = true, ...
-    FunctionTolerance = 1e-4, ...
-    PlotFcn = @gaplotbestf ...
-);
-tic
-[x_opt, fval] = ga(f, numel(y0), [], [], [], [], lb, ub, [], options);
-dt = toc;
+% Temporarily consider only one satellite
+original_sats = settings.num_sats;
+settings.num_sats = 1;
 
-fprintf('Optimized cost: \t%d\n', fval)
-fprintf('Computation time: \t%.2f s\n', dt)
+n = 100;
+f1 = constellation_obj_fun(settings);
+domains = zeros(6, n);
+costs = zeros(6, n);
 
-% Propagate the optimized constellation and visualize the results
+% For each variable, try changing it to its lower and upper bound and plot the cost function value
+parfor i = 1:length(y0)
+    y0_temp = y0;
+
+    fi = @(v) f1([y0_temp(1:i - 1); v; y0_temp(i + 1:end)]); %#ok<PFBNS>
+
+    domain = linspace(lb(i), ub(i), n);
+    cost = arrayfun(fi, domain);
+
+    domains(i, :) = domain;
+    costs(i, :) = cost;
+end
+
+for i = 1:length(y0)
+    original_value = y0(i);
+
+    domain = domains(i, :);
+    cost = costs(i, :);
+
+    figure;
+    plot(kep_values(domains(i, :), i), costs(i, :), 'LineWidth', 2);
+    xlabel(kep_label(i), Interpreter = "latex")
+    ylabel('Cost')
+    grid on;
+    savefig(sprintf('boundedness_%d.png', i), [3 2]),
+end
+
+% Set back the number of satellites
+settings.num_sats = original_sats;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% OPTIMIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

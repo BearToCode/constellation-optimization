@@ -40,14 +40,14 @@ function settings = config()
 
     fprintf('================= WORLD SETTINGS =================\n')
 
-    settings.country = "Switzerland"; % Country to be covered by the constellation.
+    settings.target = "Switzerland"; % Country to be covered by the constellation.
     settings.sample_points = 2e5; % Number of sample points to generate on Earth.
 
     % Extract country geometry from shapefile
     countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
-    country = geocode(settings.country, countries);
-    country_shape = country.Shape;
-    country_area = area(country_shape);
+    settings.country = geocode(settings.target, countries);
+    settings.country_shape = settings.country.Shape;
+    settings.country_area = area(settings.country_shape);
 
     % Generate sample points
     unit_points = fibonacci_sphere(settings.sample_points);
@@ -57,14 +57,15 @@ function settings = config()
     geo_points = geopointshape(rad2deg(el), rad2deg(az));
 
     % Filter points inside the country
-    inside_geo_points = geo_points(isinterior(country_shape, geo_points));
-    area_per_point = country_area / numel(inside_geo_points);
+    inside_geo_points = geo_points(isinterior(settings.country_shape, geo_points));
+    area_per_point = settings.country_area / numel(inside_geo_points);
 
-    fprintf('Country: \t\t%s\n', settings.country)
-    fprintf("Country area: \t\t%.2f km² \n", country_area / 1e6)
+    fprintf('Country: \t\t%s\n', settings.target)
+    fprintf("Country area: \t\t%.2f km² \n", settings.country_area / 1e6)
     fprintf("Points inside country: \t%d\n", numel(inside_geo_points))
     fprintf("Area per point: \t%.2f km²\n", area_per_point / 1e6)
 
+    settings.geo_points = inside_geo_points;
     % Points to be used for coverage evaluation, converted to ECEF coordinates
     settings.points = arrayfun( ...
         @(p) geo2ecef([
