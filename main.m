@@ -20,7 +20,7 @@ ub = repmat([7178e3, 0.025, deg2rad(180 - 46), deg2rad(360), deg2rad(360), deg2r
 f = constellation_obj_fun(settings);
 
 % Consider a random initial solution
-y0 = [6860e3, 0.00054, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]';
+y0 = [6760e3, 0.00154, deg2rad(97.5643), deg2rad(182.719), deg2rad(275.0914), deg2rad(85.03242)]';
 
 tic
 initial_cost = f(repmat(y0, settings.num_sats, 1));
@@ -30,10 +30,10 @@ fprintf('Initial cost: \t\t%d\n', initial_cost)
 fprintf('Computation time: \t%.2f s\n', dt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BOUNDEDNESS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INITIAL ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fprintf('================== BOUNDEDNESS ===================\n')
+fprintf('================ INITIAL ANALYSIS ================\n')
 
 % Temporarily consider only one satellite
 original_sats = settings.num_sats;
@@ -71,9 +71,16 @@ for i = 1:length(y0)
     savefig(sprintf('boundedness_%d.png', i), [3 2]),
 end
 
-% Set back the number of satellites
-settings.num_sats = original_sats;
+fprintf('Boundedness plots saved.\n')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OPTIMIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SIMPLIFIED PROBLEM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Create a simplified optimization problem, where just the inclination and RAAN are optimized, while the other variables are fixed to their initial values
+fprintf('=============== SIMPLIFIED PROBLEM ===============\n')
+
+f_simplified = @(x) f([y0(1:2); x(1); y0(4); x(2); y0(6)]);
+
+% Set back the number of satellites
+settings.num_sats = original_sats;

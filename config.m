@@ -7,7 +7,7 @@ function settings = config()
     fprintf('================== TIME SETTINGS =================\n')
 
     ti_jd = 2461123.18064; % Initial time in Julian Date
-    simulation_time = 7 * 3600; % Simulation time [s]
+    simulation_time = 10 * 3600; % Simulation time [s]
 
     settings.ti = jd2unix(ti_jd); % Initial time [s]
     settings.tf = settings.ti + simulation_time; % Final time [s]
@@ -40,8 +40,8 @@ function settings = config()
 
     fprintf('================= WORLD SETTINGS =================\n')
 
-    settings.target = "Switzerland"; % Country to be covered by the constellation.
-    settings.sample_points = 2e5; % Number of sample points to generate on Earth.
+    settings.target = "Ukraine"; % Country to be covered by the constellation.
+    settings.sample_points = 3e5; % Number of sample points to generate on Earth.
 
     % Extract country geometry from shapefile
     countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");

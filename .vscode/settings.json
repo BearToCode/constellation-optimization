@@ -25,6 +25,7 @@
     "shapefile",
     "sprintf",
     "strcat",
+    "syms",
     "trapz",
     "vecnorm",
     "worldmap"

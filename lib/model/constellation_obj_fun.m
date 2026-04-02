@@ -19,13 +19,22 @@ function f = constellation_obj_fun(settings)
             sat_state = sat_states(:, idx);
             sat_pos_eci = sat_state(1:3);
             sat_pos_ecef = eci2ecef(sat_pos_eci, t);
+            sat_pos_geo = ecef2geo(sat_pos_ecef);
 
-            sat_points_covered = zeros(numel(settings.points), 1);
+            max_distance = max_distance_to_sat(sat_pos_geo, settings.min_elevation);
 
-            for p = 1:size(settings.points, 2)
-                point_ecef = settings.points(:, p);
-                sat_points_covered(p) = point_is_visible(sat_pos_ecef, point_ecef, settings.min_elevation);
-            end
+            indices = rangesearch(settings.points', sat_pos_ecef', max_distance);
+            indices = cell2mat(indices);
+            % convert indices to logical array
+            sat_points_covered = false(numel(settings.points), 1);
+            sat_points_covered(indices) = true;
+
+            % sat_points_covered = zeros(numel(settings.points), 1);
+
+            % for p = 1:size(settings.points, 2)
+            %     point_ecef = settings.points(:, p);
+            %     sat_points_covered(p) = point_is_visible(sat_pos_ecef, point_ecef, settings.min_elevation);
+            % end
 
             points_covered = sat_points_covered | points_covered;
         end
