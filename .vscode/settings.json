@@ -28,6 +28,7 @@
     "syms",
     "trapz",
     "vecnorm",
-    "worldmap"
+    "worldmap",
+    "yyaxis"
   ]
 }
