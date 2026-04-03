@@ -78,6 +78,8 @@ function settings = config()
     ]), 1:numel(inside_geo_points), UniformOutput = false);
     settings.points = cell2mat(settings.points);
 
+    settings.kdtree = KDTreeSearcher(settings.points');
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % INTEGRATION SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

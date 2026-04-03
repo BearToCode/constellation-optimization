@@ -14,7 +14,7 @@ fprintf('=============== OBJECTIVE FUNCTION ===============\n')
 
 % semi-major axis, eccentricity, inclination, RAAN, argument of perigee, mean anomaly, true anomaly
 lb = repmat([6578e3, 0, deg2rad(46), 0, 0, 0]', settings.num_sats, 1);
-ub = repmat([7178e3, 0.025, deg2rad(180 - 46), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
+ub = repmat([7178e3, 0.030, deg2rad(180 - 46), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
 
 % Construct the objective function with the given settings
 f = constellation_obj_fun(settings);
@@ -36,7 +36,7 @@ fprintf('Computation time: \t%.2f s\n', dt)
 fprintf('================== CONSTRAINTS ==================\n')
 
 settings.min_altitude = 200e3; % Minimum altitude [m]
-settings.max_altitude = 2000e3; % Maximum altitude [m]
+settings.max_altitude = 800e3; % Maximum altitude [m]
 
 fprintf('Minimum altitude: \t%.2f km\n', settings.min_altitude / 1e3)
 fprintf('Maximum altitude: \t%.2f km\n', settings.max_altitude / 1e3)
@@ -106,6 +106,28 @@ end
 
 fprintf('Boundedness plots saved.\n')
 
+% Plot the constraint surface for semi-major axis and eccentricity
+a_domain = linspace(lb(1), ub(1), 100);
+e_domain = linspace(lb(2), ub(2), 100);
+
+[A, E] = meshgrid(a_domain, e_domain);
+g_values = arrayfun(@(a, e) g1([a; e; y0(3:end)])', A(:), E(:), UniformOutput = false);
+g_values = cell2mat(g_values)';
+g1_values = reshape(g_values(1, :), size(A, 1), size(A, 2));
+g2_values = reshape(g_values(2, :), size(A, 1), size(A, 2));
+
+% Color the 2D area where both constraints are satisfied (g1 <= 0 and g2 <= 0)
+satisfied = ((g1_values <= 0) & (g2_values <= 0)) - 0.5;
+figure;
+contourf(A, E, satisfied, [0 0], LineWidth = 2);
+xlabel('Semi-major axis (m)')
+ylabel('Eccentricity')
+legend('$g = 0$', Interpreter = "latex")
+grid on;
+savefig('feasible_region.png', [3 2])
+
+fprintf('Feasible region plot saved.\n')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SIMPLIFIED PROBLEM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -113,7 +135,43 @@ fprintf('Boundedness plots saved.\n')
 % Create a simplified optimization problem, where just the inclination and RAAN are optimized, while the other variables are fixed to their initial values
 fprintf('=============== SIMPLIFIED PROBLEM ===============\n')
 
-f_simplified = @(x) f([y0(1:2); x(1); y0(4); x(2); y0(6)]);
+f_simplified = @(x) f1([y0(1:2); x(1); y0(4); x(2); y0(6)]);
+
+% Create a meshgrid of inclination and RAAN values
+n = 80;
+inc_domain = linspace(lb(3), ub(3), n);
+raan_domain = linspace(lb(4), ub(4), n);
+[INC, RAAN] = meshgrid(inc_domain, raan_domain);
+
+cost_values = zeros(size(INC));
+
+fprintf('Evaluating cost function for the simplified problem...\n')
+
+parfor i = 1:n
+
+    for j = 1:n
+        cost_values(i, j) = f_simplified([INC(i, j); RAAN(i, j)]);
+    end
+
+end
+
+figure;
+surfc(inc_domain, raan_domain, cost_values', 'EdgeColor', 'none')
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+zlabel('Cost')
+grid on;
+view(130, 45)
+savefig('simplified_cost_surface.png', [3 2])
+
+% Also make an isoline plot
+figure;
+contourf(inc_domain, raan_domain, cost_values', 20, LineWidth = 1)
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+colorbar
+grid on;
+savefig('simplified_cost_contour.png', [3 2])
 
 % Set back the number of satellites
 settings.num_sats = original_sats;
