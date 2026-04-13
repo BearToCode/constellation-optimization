@@ -8,15 +8,11 @@ addpath(genpath('lib'))
 % CONFIGURATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Define configuration
-
 settings = config();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OBJECTIVE FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Objective function
 
 fprintf('=============== OBJECTIVE FUNCTION ===============\n')
 
@@ -41,8 +37,6 @@ fprintf('Computation time: \t%.2f s\n', dt)
 % CONSTRAINTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Constraints
-
 fprintf('================== CONSTRAINTS ==================\n')
 
 settings.min_altitude = 200e3; % Minimum altitude [m]
@@ -56,8 +50,6 @@ g = constellation_constr(settings);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INITIAL ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Initial analysis
 
 fprintf('================ INITIAL ANALYSIS ================\n')
 
@@ -73,24 +65,36 @@ costs = zeros(6, n);
 constraints1 = zeros(6, n);
 constraints2 = zeros(6, n);
 
-% For each variable, try changing it to its lower and upper bound and plot the cost function value
-parfor i = 1:length(y0)
-    y0_temp = y0;
+cached_path = get_cache_path('boundedness_analysis');
 
-    fi = @(v) f1([y0_temp(1:i - 1); v; y0_temp(i + 1:end)]); %#ok<PFBNS>
-    gi = @(v) g1([y0_temp(1:i - 1); v; y0_temp(i + 1:end)]); %#ok<PFBNS>
+if exist(cached_path, 'file')
+    fprintf('Loading cached boundedness analysis from %s...\n', cached_path)
+    load(cached_path, 'domains', 'costs', 'constraints1', 'constraints2')
+else
+    fprintf('Performing boundedness analysis...\n')
 
-    domain = linspace(lb(i), ub(i), n);
-    cost = arrayfun(fi, domain);
+    % For each variable, try changing it to its lower and upper bound and plot the cost function value
+    parfor i = 1:length(y0)
+        y0_temp = y0;
 
-    constraint = arrayfun(gi, domain, UniformOutput = false);
-    constraint = cell2mat(constraint);
+        fi = @(v) f1([y0_temp(1:i - 1); v; y0_temp(i + 1:end)]); %#ok<PFBNS>
+        gi = @(v) g1([y0_temp(1:i - 1); v; y0_temp(i + 1:end)]); %#ok<PFBNS>
 
-    domains(i, :) = domain;
-    costs(i, :) = cost;
-    constraints1(i, :) = constraint(1, :);
-    constraints2(i, :) = constraint(2, :);
+        domain = linspace(lb(i), ub(i), n);
+        cost = arrayfun(fi, domain);
 
+        constraint = arrayfun(gi, domain, UniformOutput = false);
+        constraint = cell2mat(constraint);
+
+        domains(i, :) = domain;
+        costs(i, :) = cost;
+        constraints1(i, :) = constraint(1, :);
+        constraints2(i, :) = constraint(2, :);
+
+    end
+
+    save(cached_path, 'domains', 'costs', 'constraints1', 'constraints2')
+    fprintf('Boundedness analysis completed and saved to cache.\n')
 end
 
 for i = 1:length(y0)
@@ -147,8 +151,6 @@ settings.num_sats = original_sats;
 % SIMPLIFIED PROBLEM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Simplified problem definition
-
 % Create a simplified optimization problem, where just the inclination and RAAN are optimized, while the other variables are fixed to their initial values
 fprintf('=============== SIMPLIFIED PROBLEM ===============\n')
 
@@ -159,8 +161,6 @@ settings.num_sats = 1;
 f1 = constellation_obj_fun(settings);
 f_simplified = @(x) f1([y0(1:2); x(1); y0(4); x(2); y0(6)]);
 
-%% Simplified problem analysis
-
 % Create a meshgrid of inclination and RAAN values
 n = 80;
 inc_domain = linspace(lb(3), ub(3), n);
@@ -169,14 +169,24 @@ raan_domain = linspace(lb(4), ub(4), n);
 
 cost_values = zeros(size(INC));
 
-fprintf('Evaluating cost function for the simplified problem...\n')
+cached_path = get_cache_path('simplified_cost_values');
 
-parfor i = 1:n
+if exist(cached_path, 'file')
+    fprintf('Loading cached cost values from %s...\n', cached_path)
+    load(cached_path, 'cost_values')
+else
+    fprintf('Evaluating cost function for the simplified problem...\n')
 
-    for j = 1:n
-        cost_values(i, j) = f_simplified([INC(i, j); RAAN(i, j)]);
+    parfor i = 1:n
+
+        for j = 1:n
+            cost_values(i, j) = f_simplified([INC(i, j); RAAN(i, j)]);
+        end
+
     end
 
+    save(cached_path, 'cost_values')
+    fprintf('Cost values computed and saved to cache.\n')
 end
 
 figure;
@@ -197,7 +207,37 @@ colorbar
 grid on;
 savefig('simplified_cost_contour.png', [3 2])
 
-%% Simplified problem optimization
+% Simplified problem local optimization
+
+% Pick random points in the domain and perform a local optimization (SQP)
+rng default % Get reproducible results
+n = 1;
+points = (rand(2, n) .* (ub(3:4) - lb(3:4)) + lb(3:4))';
+local_minima = zeros(n, 2); % Store the local minima and their costs
+local_minima_costs = zeros(n, 1);
+
+options = optimoptions('fmincon', Display = 'iter', UseParallel = true, Algorithm = 'sqp');
+
+for i = 1:size(points, 1)
+    x0 = points(i, :);
+    x_opt = fmincon(f_simplified, x0, [], [], [], [], lb(3:4), ub(3:4), [], options);
+    local_minima(i, :) = x_opt;
+    local_minima_costs(i) = f_simplified(x_opt);
+end
+
+% Plot the local minima on the cost surface
+figure;
+surfc(inc_domain, raan_domain, cost_values', 'EdgeColor', 'none')
+hold on;
+plot3(local_minima(:, 1), local_minima(:, 2), local_minima_costs, 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+zlabel('Cost')
+grid on;
+view(130, 45)
+savefig('simplified_cost_surface_local.png', [3 2])
+
+% Simplified problem optimization
 
 options = optimoptions('particleswarm', Display = 'iter', UseParallel = true);
 [x_opt, fval] = particleswarm(f_simplified, 2, [lb(3); lb(4)], [ub(3); ub(4)], options);
