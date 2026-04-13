@@ -4,11 +4,19 @@ clc; clear; close all;
 % Import necessary libraries
 addpath(genpath('lib'))
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONFIGURATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Define configuration
+
 settings = config();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OBJECTIVE FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Objective function
 
 fprintf('=============== OBJECTIVE FUNCTION ===============\n')
 
@@ -33,6 +41,8 @@ fprintf('Computation time: \t%.2f s\n', dt)
 % CONSTRAINTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Constraints
+
 fprintf('================== CONSTRAINTS ==================\n')
 
 settings.min_altitude = 200e3; % Minimum altitude [m]
@@ -46,6 +56,8 @@ g = constellation_constr(settings);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INITIAL ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Initial analysis
 
 fprintf('================ INITIAL ANALYSIS ================\n')
 
@@ -101,7 +113,7 @@ for i = 1:length(y0)
     ylabel('$g$ constraints', Interpreter = "latex")
     grid on;
     legend('Cost', '$g_1$', '$g_2$', Interpreter = "latex")
-    savefig(sprintf('boundedness_%d.png', i), [3 2]),
+    savefig(sprintf('boundedness_%d.png', i), [2 1.5]),
 end
 
 fprintf('Boundedness plots saved.\n')
@@ -128,14 +140,26 @@ savefig('feasible_region.png', [3 2])
 
 fprintf('Feasible region plot saved.\n')
 
+% Set back the number of satellites
+settings.num_sats = original_sats;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SIMPLIFIED PROBLEM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Simplified problem definition
+
 % Create a simplified optimization problem, where just the inclination and RAAN are optimized, while the other variables are fixed to their initial values
 fprintf('=============== SIMPLIFIED PROBLEM ===============\n')
 
+% Temporarily consider only one satellite
+original_sats = settings.num_sats;
+settings.num_sats = 1;
+
+f1 = constellation_obj_fun(settings);
 f_simplified = @(x) f1([y0(1:2); x(1); y0(4); x(2); y0(6)]);
+
+%% Simplified problem analysis
 
 % Create a meshgrid of inclination and RAAN values
 n = 80;
@@ -166,12 +190,40 @@ savefig('simplified_cost_surface.png', [3 2])
 
 % Also make an isoline plot
 figure;
-contourf(inc_domain, raan_domain, cost_values', 20, LineWidth = 1)
+contourf(inc_domain, raan_domain, cost_values', 10, LineWidth = 1)
 xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 colorbar
 grid on;
 savefig('simplified_cost_contour.png', [3 2])
+
+%% Simplified problem optimization
+
+options = optimoptions('particleswarm', Display = 'iter', UseParallel = true);
+[x_opt, fval] = particleswarm(f_simplified, 2, [lb(3); lb(4)], [ub(3); ub(4)], options);
+
+% plot the optimal point on the cost surface
+figure;
+surfc(inc_domain, raan_domain, cost_values', 'EdgeColor', 'none')
+hold on;
+plot3(x_opt(1), x_opt(2), fval, 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+zlabel('Cost')
+grid on;
+view(130, 45)
+savefig('simplified_cost_surface_opt.png', [3 2])
+
+% plot the optimal point on the 2D contour as well
+figure;
+contourf(inc_domain, raan_domain, cost_values', 10, LineWidth = 1)
+hold on;
+plot(x_opt(1), x_opt(2), 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+colorbar
+grid on;
+savefig('simplified_cost_contour_opt.png', [3 2])
 
 % Set back the number of satellites
 settings.num_sats = original_sats;
