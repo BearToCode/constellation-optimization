@@ -106,18 +106,18 @@ for i = 1:length(y0)
     constraint2 = constraints2(i, :);
 
     figure;
-    plot(kep_values(domains(i, :), i), costs(i, :), 'LineWidth', 2);
+    plot(kep_values(domains(i, :), i), costs(i, :), LineWidth = 2);
     xlabel(kep_label(i), Interpreter = "latex")
     ylabel('Cost')
     % Plot constraints on a different y-axis
     yyaxis right;
-    plot(kep_values(domains(i, :), i), constraint1, 'LineWidth', 2);
+    plot(kep_values(domains(i, :), i), constraint1, LineWidth = 2);
     hold on;
-    plot(kep_values(domains(i, :), i), constraint2, 'LineWidth', 2);
+    plot(kep_values(domains(i, :), i), constraint2, LineWidth = 2);
     ylabel('$g$ constraints', Interpreter = "latex")
     grid on;
     legend('Cost', '$g_1$', '$g_2$', Interpreter = "latex")
-    savefig(sprintf('boundedness_%d.png', i), [4 3]),
+    savefig(sprintf('boundedness_%d.png', i), [2 1.5]),
 end
 
 fprintf('Boundedness plots saved.\n')
@@ -140,7 +140,7 @@ xlabel('Semi-major axis (m)')
 ylabel('Eccentricity')
 legend('$g = 0$', Interpreter = "latex")
 grid on;
-savefig('feasible_region.png', [4 3])
+savefig('feasible_region.png', [3 2])
 
 fprintf('Feasible region plot saved.\n')
 
@@ -190,13 +190,13 @@ else
 end
 
 figure;
-surfc(inc_domain, raan_domain, cost_values, 'EdgeColor', 'none')
+surfc(inc_domain, raan_domain, cost_values, EdgeColor = 'none')
 xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface.png', [4 3])
+savefig('simplified_cost_surface.png', [3 2])
 
 % Also make an isoline plot
 figure;
@@ -205,7 +205,7 @@ xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 colorbar
 grid on;
-savefig('simplified_cost_contour.png', [4 3])
+savefig('simplified_cost_contour.png', [3 2])
 
 % Simplified problem local optimization
 
@@ -227,15 +227,26 @@ end
 
 % Plot the local minima on the cost surface
 figure;
-surfc(inc_domain, raan_domain, cost_values, 'EdgeColor', 'none')
+surfc(inc_domain, raan_domain, cost_values, EdgeColor = 'none')
 hold on;
-plot3(local_minima(:, 1), local_minima(:, 2), local_minima_costs, 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+plot3(local_minima(:, 1), local_minima(:, 2), local_minima_costs, 'ro', MarkerSize = 10, LineWidth = 2)
 xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface_local.png', [4 3])
+savefig('simplified_cost_surface_local.png', [3 2])
+
+% And on the contour plot
+figure;
+contourf(inc_domain, raan_domain, cost_values, 10, LineWidth = 1)
+hold on;
+plot(local_minima(:, 1), local_minima(:, 2), 'ro', MarkerSize = 10, LineWidth = 2)
+xlabel('Inclination (rad)')
+ylabel('RAAN (rad)')
+colorbar
+grid on;
+savefig('simplified_cost_contour_local.png', [3 2])
 
 % Simplified problem optimization
 
@@ -244,26 +255,26 @@ options = optimoptions('particleswarm', Display = 'iter', UseParallel = true);
 
 % plot the optimal point on the cost surface
 figure;
-surfc(inc_domain, raan_domain, cost_values, 'EdgeColor', 'none')
+surfc(inc_domain, raan_domain, cost_values, EdgeColor = 'none')
 hold on;
-plot3(x_opt(1), x_opt(2), fval, 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+plot3(x_opt(1), x_opt(2), fval, 'ro', MarkerSize = 10, LineWidth = 2)
 xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface_opt.png', [4 3])
+savefig('simplified_cost_surface_opt.png', [3 2])
 
 % plot the optimal point on the 2D contour as well
 figure;
 contourf(inc_domain, raan_domain, cost_values, 10, LineWidth = 1)
 hold on;
-plot(x_opt(1), x_opt(2), 'ro', 'MarkerSize', 10, 'LineWidth', 2)
+plot(x_opt(1), x_opt(2), 'ro', MarkerSize = 10, LineWidth = 2)
 xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 colorbar
 grid on;
-savefig('simplified_cost_contour_opt.png', [4 3])
+savefig('simplified_cost_contour_opt.png', [3 2])
 
 % Set back the number of satellites
 settings.num_sats = original_sats;
