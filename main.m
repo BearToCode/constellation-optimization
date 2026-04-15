@@ -117,7 +117,7 @@ for i = 1:length(y0)
     ylabel('$g$ constraints', Interpreter = "latex")
     grid on;
     legend('Cost', '$g_1$', '$g_2$', Interpreter = "latex")
-    savefig(sprintf('boundedness_%d.png', i), [8 6]),
+    savefig(sprintf('boundedness_%d.png', i), [4 3]),
 end
 
 fprintf('Boundedness plots saved.\n')
@@ -140,7 +140,7 @@ xlabel('Semi-major axis (m)')
 ylabel('Eccentricity')
 legend('$g = 0$', Interpreter = "latex")
 grid on;
-savefig('feasible_region.png', [8 6])
+savefig('feasible_region.png', [4 3])
 
 fprintf('Feasible region plot saved.\n')
 
@@ -196,7 +196,7 @@ ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface.png', [8 6])
+savefig('simplified_cost_surface.png', [4 3])
 
 % Also make an isoline plot
 figure;
@@ -205,7 +205,7 @@ xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 colorbar
 grid on;
-savefig('simplified_cost_contour.png', [8 6])
+savefig('simplified_cost_contour.png', [4 3])
 
 % Simplified problem local optimization
 
@@ -235,7 +235,7 @@ ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface_local.png', [8 6])
+savefig('simplified_cost_surface_local.png', [4 3])
 
 % Simplified problem optimization
 
@@ -252,7 +252,7 @@ ylabel('RAAN (rad)')
 zlabel('Cost')
 grid on;
 view(130, 45)
-savefig('simplified_cost_surface_opt.png', [8 6])
+savefig('simplified_cost_surface_opt.png', [4 3])
 
 % plot the optimal point on the 2D contour as well
 figure;
@@ -263,7 +263,7 @@ xlabel('Inclination (rad)')
 ylabel('RAAN (rad)')
 colorbar
 grid on;
-savefig('simplified_cost_contour_opt.png', [8 6])
+savefig('simplified_cost_contour_opt.png', [4 3])
 
 % Set back the number of satellites
 settings.num_sats = original_sats;

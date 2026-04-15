@@ -41,7 +41,7 @@ function settings = config()
     fprintf('================= WORLD SETTINGS =================\n')
 
     settings.target = "Ukraine"; % Country to be covered by the constellation.
-    settings.sample_points = 3e5; % Number of sample points to generate on Earth.
+    settings.nb_ground_points = 3e5; % Number of sample points to generate on Earth.
 
     % Extract country geometry from shapefile
     countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
@@ -50,10 +50,10 @@ function settings = config()
     settings.country_area = area(settings.country_shape);
 
     % Generate sample points
-    unit_points = fibonacci_sphere(settings.sample_points);
+    ground_points = fibonacci_sphere(settings.nb_ground_points);
 
     % Convert to spherical coordinates
-    [az, el] = cart2sph(unit_points(1, :), unit_points(2, :), unit_points(3, :));
+    [az, el] = cart2sph(ground_points(1, :), ground_points(2, :), ground_points(3, :));
     geo_points = geopointshape(rad2deg(el), rad2deg(az));
 
     % Filter points inside the country
