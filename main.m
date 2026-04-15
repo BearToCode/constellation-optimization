@@ -285,55 +285,68 @@ savefig('simplified_constellation_track.png', [6 4])
 settings.num_sats = original_sats;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OPTIMIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SIMULATED ANNEALING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 penalty_order = 10;
 f_constrained = apply_penalty(f, g, penalty_order);
 
 % Simulated annealing options
-sa_options.max_iters = 2000;
+sa_options.max_iters = 3000;
 sa_options.max_no_improvement_iters = 500;
-sa_options.debug = false;
+sa_options.fun_tolerance_ratio = 1e-4;
+sa_options.debug = true;
 
-% Run 6 parallel optimizations and pick the best one
+% Run parallel optimizations and pick the best one
 n_parallel = 12;
 x_opt_parallel = zeros(length(y0) * settings.num_sats, n_parallel);
 fval_parallel = zeros(n_parallel, 1);
 best_evaluations_parallel = zeros(sa_options.max_iters, n_parallel);
 
-y0_sa = zeros(length(y0) * settings.num_sats, n_parallel);
+y0_sa = zeros(length(y0) * settings.num_sats, 1);
 temperature_sa = zeros(n_parallel, 1);
 alpha_sa = zeros(n_parallel, 1);
 
-min_temp = 1e4;
-max_temp = 1e6;
-min_alpha = 0.90;
-max_alpha = 0.995;
+cached_path = get_cache_path('simulated_annealing_results');
 
-% Choose random initial temperatures and cooling rates for each optimization
-for i = 1:n_parallel
-    rng(i) % Set a different seed for each optimization for reproducibility
-    y0_sa(:, i) = (rand(length(y0) * settings.num_sats, 1) .* (ub - lb) + lb);
-    temperature_sa(i) = 10 .^ (rand() * (log10(max_temp) - log10(min_temp)) + log10(min_temp));
-    alpha_sa(i) = rand() * (max_alpha - min_alpha) + min_alpha;
+if exist(cached_path, 'file')
+    fprintf('Loading cached simulated annealing results from %s...\n', cached_path)
+    load(cached_path, 'y0_sa', 'temperature_sa', 'alpha_sa', 'x_opt_parallel', 'fval_parallel', 'best_evaluations_parallel')
+else
+    fprintf('Running simulated annealing optimizations...\n')
 
-    fprintf('Optimization %d: initial temperature = %.2e, alpha = %.4f\n', i, temperature_sa(i), alpha_sa(i))
-end
+    min_temp = 1e2;
+    max_temp = 1e5;
+    min_alpha = 0.99;
+    max_alpha = 0.999;
 
-parfor i = 1:n_parallel
-    fprintf('Starting optimization %d/%d...\n', i, n_parallel)
+    % Choose random initial temperatures and cooling rates for each optimization
+    for i = 1:n_parallel
+        rng(i) % Set a different seed for each optimization for reproducibility
+        y0_sa(:, i) = (rand(length(y0) * settings.num_sats, 1) .* (ub - lb) + lb);
+        temperature_sa(i) = 10 .^ (rand() * (log10(max_temp) - log10(min_temp)) + log10(min_temp));
+        alpha_sa(i) = rand() * (max_alpha - min_alpha) + min_alpha;
 
-    sa_run_options = sa_options;
-    sa_run_options.initial_temperature = temperature_sa(i);
-    sa_run_options.alpha = alpha_sa(i);
+        fprintf('Optimization %d: initial temperature = %.2e, alpha = %.4f\n', i, temperature_sa(i), alpha_sa(i))
+    end
 
-    [x_opt_temp, fval_temp, best_evaluations_temp] = sa(f_constrained, y0_sa(:, i), lb, ub, sa_run_options);
-    x_opt_parallel(:, i) = x_opt_temp;
-    fval_parallel(i) = fval_temp;
-    best_evaluations_parallel(:, i) = best_evaluations_temp;
+    parfor i = 1:n_parallel
+        fprintf('Starting optimization %d/%d...\n', i, n_parallel)
 
-    fprintf('Optimization %d completed with cost %.6f.\n', i, fval_temp)
+        sa_run_options = sa_options;
+        sa_run_options.initial_temperature = temperature_sa(i);
+        sa_run_options.alpha = alpha_sa(i);
+
+        [x_opt_temp, fval_temp, best_evaluations_temp] = sa(f_constrained, y0_sa(:, i), lb, ub, sa_run_options);
+        x_opt_parallel(:, i) = x_opt_temp;
+        fval_parallel(i) = fval_temp;
+        best_evaluations_parallel(:, i) = best_evaluations_temp;
+
+        fprintf('Optimization %d completed with cost %.6f.\n', i, fval_temp)
+    end
+
+    save(cached_path, 'y0_sa', 'temperature_sa', 'alpha_sa', 'x_opt_parallel', 'fval_parallel', 'best_evaluations_parallel')
+    fprintf('Simulated annealing optimizations completed and results saved to cache.\n')
 end
 
 % Pick the best solution among the parallel runs
@@ -345,14 +358,14 @@ fprintf('Best optimization run: %d with cost %.6f\n', best_idx, best_fval)
 figure;
 
 for i = 1:n_parallel
-    plot(best_evaluations_parallel(:, i), 'LineWidth', 2)
-    hold on;
+    plot(best_evaluations_parallel(:, i), LineWidth = 2)
+    hold on
 end
 
 xlabel('Iteration')
 ylabel('Best Cost')
-ylim([best_fval * 0.975, best_fval * 1.1])
-grid on;
+grid on
+ylim([best_fval * 0.99, best_fval * 1.05])
 savefig('optimization_convergence.png', [3 2])
 
 % Plot the constellation track for the best solution

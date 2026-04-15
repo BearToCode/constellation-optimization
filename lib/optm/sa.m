@@ -13,12 +13,15 @@ function [x_opt, fval, best_evaluations] = sa(f, x0, lb, ub, options)
     %      - initial_temperature: Initial temperature of the algorithm.
     %      - debug: If true, prints debug information during optimization.
     %      - alpha: The cooling rate (between 0 and 1) that determines how quickly the temperature decreases.
+    %      - fun_tolerance_ratio: The ratio of the function value change to the initial function value that determines
+    %                             the stopping criterion based on function value change.
     %
     % Outputs:
     %   x_opt: The found solution of the optimization problem.
     %   fval: The function evaluated at the found minimum.
     %   best_evaluations: The best function evaluation found per iteration.
 
+    improvement_ratio_threshold = 1 - options.fun_tolerance_ratio;
     initial_step_sizes = (ub - lb) * 0.25;
 
     best_evaluations = zeros(options.max_iters, 1);
@@ -34,13 +37,15 @@ function [x_opt, fval, best_evaluations] = sa(f, x0, lb, ub, options)
     no_improvement_iters = 0;
 
     while k <= options.max_iters && no_improvement_iters < options.max_no_improvement_iters
-        temperature = options.initial_temperature * power(options.alpha, k);
+        temperature = options.initial_temperature * options.alpha ^ (k - 1);
+        step_scale = temperature / options.initial_temperature;
 
         % Generate candidate solution
-        perturbation = randn(N, 1) .* initial_step_sizes;
+        perturbation = randn(N, 1) .* initial_step_sizes * step_scale;
         candidate_x = current_x + perturbation;
-        % Clamp the results between bounds
-        candidate_x = min(max(candidate_x, lb), ub);
+        % Reflect the candidate solution back into the bounds if it goes out of bounds
+        candidate_x = lb + abs(mod(candidate_x - lb, 2 * (ub - lb)));
+        candidate_x = min(candidate_x, ub);
         candidate_eval = f(candidate_x);
 
         delta = candidate_eval - current_eval;
@@ -51,10 +56,14 @@ function [x_opt, fval, best_evaluations] = sa(f, x0, lb, ub, options)
             accepted = accepted + 1;
         end
 
+        improvement_ratio = current_eval / best_eval;
+
         if current_eval < best_eval
             best_x = current_x;
             best_eval = current_eval;
+        end
 
+        if improvement_ratio < improvement_ratio_threshold
             no_improvement_iters = 0;
         else
             no_improvement_iters = no_improvement_iters + 1;
@@ -64,7 +73,7 @@ function [x_opt, fval, best_evaluations] = sa(f, x0, lb, ub, options)
 
         if options.debug
             acceptance_rate = accepted / k;
-            fprintf('Iteration %d: \t Best Evaluation = %.6f \t Stuck = %d \t Acceptance Rate = %.6f\n', k, best_eval, no_improvement_iters, acceptance_rate);
+            fprintf('Iteration %d: \t Best = %.6f \t Stuck = %d \t Acc.Rate = %.6f \t Step Scale = %.6f \n', k, best_eval, no_improvement_iters, acceptance_rate, step_scale);
         end
 
         k = k + 1;
