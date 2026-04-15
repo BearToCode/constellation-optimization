@@ -276,5 +276,10 @@ colorbar
 grid on;
 savefig('simplified_cost_contour_opt.png', [3 2])
 
+% Propagate and plot the solution
+[opt_t, opt_track] = propagate_constellation(kep2eci([y0(1:2); x_opt(1); x_opt(2); y0(5:6)], constants.Earth.mu), settings);
+plot_constellation_tracks(opt_t, opt_track, settings);
+savefig('simplified_constellation_track.png', [6 4])
+
 % Set back the number of satellites
 settings.num_sats = original_sats;
