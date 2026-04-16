@@ -375,9 +375,9 @@ ylim([best_fval * 0.95, best_fval * 2.5])
 savefig('optimization_convergence.png', [3 2])
 
 % Plot the constellation track for the best solution
-[opt_t, opt_track] = propagate_constellation(kep2eci(reshape(best_x_opt, [], settings.num_sats), constants.Earth.mu), settings);
+[opt_t, opt_track] = propagate_constellation(kep2eci(reshape(x_opt_parallel(:, 11), [], settings.num_sats), constants.Earth.mu), settings);
 plot_constellation_tracks(opt_t, opt_track, settings);
-savefig('optimized_constellation_track.png', [6 4])
+savefig('optimized_constellation_track_11.png', [6 4])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GENETIC ALGORITHM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
