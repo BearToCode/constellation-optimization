@@ -14,10 +14,15 @@ function fig = plot_constellation_tracks(t, y, settings)
     worldmap('World');
     load coastlines; %#ok<LOAD>
     plotm(coastlat, coastlon, 'k', LineWidth = 2);
-    % Plot country borders
-    T = geotable2table(settings.country, ["Lat", "Lon"]);
-    [lat, lon] = polyjoin(T.Lat, T.Lon);
-    plotm(lat, lon, 'r', LineWidth = 2);
+
+    hold on
+
+    for i = numel(settings.countries)
+        % Plot country borders
+        T = geotable2table(settings.countries{i}, ["Lat", "Lon"]);
+        [lat, lon] = polyjoin(T.Lat, T.Lon);
+        plotm(lat, lon, 'r', LineWidth = 2);
+    end
 
     for idx = 1:settings.num_sats
         indices = (idx - 1) * 6 + (1:6);

@@ -40,14 +40,14 @@ function settings = config()
 
     fprintf('================= WORLD SETTINGS =================\n')
 
-    settings.target = "Ukraine"; % Country to be covered by the constellation.
+    settings.targets = ["Italy", "South Africa"]; % Country to be covered by the constellation.
     settings.nb_ground_points = 3e5; % Number of sample points to generate on Earth.
 
     % Extract country geometry from shapefile
     countries = readgeotable("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp");
-    settings.country = geocode(settings.target, countries);
-    settings.country_shape = settings.country.Shape;
-    settings.country_area = area(settings.country_shape);
+    settings.countries = arrayfun(@(country) geocode(country, countries), settings.targets, UniformOutput = false);
+    settings.countries_shape = cellfun(@(c) c.Shape, settings.countries, UniformOutput = false);
+    settings.countries_area = cellfun(@(c) area(c.Shape), settings.countries, UniformOutput = false);
 
     % Generate sample points
     ground_points = fibonacci_sphere(settings.nb_ground_points);
@@ -57,12 +57,23 @@ function settings = config()
     geo_points = geopointshape(rad2deg(el), rad2deg(az));
 
     % Filter points inside the country
-    inside_geo_points = geo_points(isinterior(settings.country_shape, geo_points));
-    area_per_point = settings.country_area / numel(inside_geo_points);
+    inside_geo_points_logical = false(size(geo_points, 1), 1);
 
-    fprintf('Country: \t\t%s\n', settings.target)
-    fprintf("Country area: \t\t%.2f km² \n", settings.country_area / 1e6)
-    fprintf("Points inside country: \t%d\n", numel(inside_geo_points))
+    for i = 1:numel(settings.countries_shape)
+        inside_geo_points_logical = inside_geo_points_logical | isinterior(settings.countries_shape{i}, geo_points);
+    end
+
+    inside_geo_points = geo_points(inside_geo_points_logical);
+
+    for i = 1:numel(settings.countries)
+        fprintf('Country: \t\t%s\n', settings.targets{i})
+        fprintf("Country area: \t\t%.2f km² \n", settings.countries_area{i} / 1e6)
+        fprintf("Points inside country: \t%d\n", sum(inside_geo_points_logical))
+    end
+
+    total_area = sum(cell2mat(settings.countries_area));
+    area_per_point = total_area / sum(inside_geo_points_logical);
+
     fprintf("Area per point: \t%.2f km²\n", area_per_point / 1e6)
 
     settings.geo_points = inside_geo_points;

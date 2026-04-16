@@ -1,5 +1,7 @@
 % Close and clear all
 clc; clear; close all;
+% Stop all parallel pools
+delete(gcp('nocreate'))
 
 % Import necessary libraries
 addpath(genpath('lib'))
@@ -250,8 +252,10 @@ savefig('simplified_cost_contour_local.png', [3 2])
 
 % Simplified problem optimization
 
-options = optimoptions('particleswarm', Display = 'iter', UseParallel = true);
+options = optimoptions('particleswarm', Display = 'iter', SwarmSize = 300, UseParallel = true);
 [x_opt, fval] = particleswarm(f_simplified, 2, [lb(3); lb(4)], [ub(3); ub(4)], options);
+
+fprintf('Optimal solution found: inclination = %.4f rad, RAAN = %.4f rad with cost = %.6f\n', x_opt(1), x_opt(2), fval)
 
 % plot the optimal point on the cost surface
 figure;
@@ -320,7 +324,7 @@ else
     min_temp = 1e2;
     max_temp = 1e5;
     min_alpha = 0.99;
-    max_alpha = 0.999; cc
+    max_alpha = 0.999;
 
     % Choose random initial temperatures and cooling rates for each optimization
     for i = 1:n_parallel

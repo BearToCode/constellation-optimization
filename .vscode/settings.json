@@ -2,6 +2,7 @@
   "cSpell.words": [
     "addpath",
     "arrayfun",
+    "cellfun",
     "coastlat",
     "coastlon",
     "colorbar",
