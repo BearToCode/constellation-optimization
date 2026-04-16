@@ -66,7 +66,8 @@ function f = constellation_obj_fun(settings)
             score = score + instant_score;
         end
 
-        cost = -score; % We want to maximize the score, so we minimize the negative of it
+        max_score = (settings.tf - settings.ti + settings.revisit_time) * numel(settings.geo_points);
+        cost = max_score - score; % We want to maximize the score, so we minimize the negative of it
     end
 
     f = @impl;

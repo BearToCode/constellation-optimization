@@ -16,17 +16,18 @@ function fig = plot_constellation_tracks(t, y, settings)
     plotm(coastlat, coastlon, 'k', LineWidth = 2);
 
     for i = 1:numel(settings.targets)
-        disp(i)
         % Plot country borders
         T = geotable2table(settings.countries{i}, ["Lat", "Lon"]);
         [lat, lon] = polyjoin(T.Lat, T.Lon);
         plotm(lat, lon, 'r', LineWidth = 2);
     end
 
+    colors = orderedcolors("gem");
+
     for idx = 1:settings.num_sats
         indices = (idx - 1) * 6 + (1:6);
         x_cor = eci2geo(y(:, indices)', t);
-        plotm(rad2deg(x_cor(1, :)), rad2deg(x_cor(2, :)), LineWidth = 2, LineStyle = '--');
+        plotm(rad2deg(x_cor(1, :)), rad2deg(x_cor(2, :)), LineWidth = 2, LineStyle = '--', Color = colors(idx, :));
     end
 
 end
