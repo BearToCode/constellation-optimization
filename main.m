@@ -288,6 +288,8 @@ settings.num_sats = original_sats;
 % SIMULATED ANNEALING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+fprintf('=============== SIMULATED ANNEALING ==============\n')
+
 penalty_order = 10;
 f_constrained = apply_penalty(f, g, penalty_order);
 
@@ -318,7 +320,7 @@ else
     min_temp = 1e2;
     max_temp = 1e5;
     min_alpha = 0.99;
-    max_alpha = 0.999;
+    max_alpha = 0.999; cc
 
     % Choose random initial temperatures and cooling rates for each optimization
     for i = 1:n_parallel
@@ -365,7 +367,7 @@ end
 xlabel('Iteration')
 ylabel('Best Cost')
 grid on
-ylim([best_fval * 0.99, best_fval * 1.05])
+ylim([best_fval, best_fval * 1.05])
 savefig('optimization_convergence.png', [3 2])
 
 % Plot the constellation track for the best solution
