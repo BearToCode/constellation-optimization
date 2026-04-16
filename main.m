@@ -385,7 +385,23 @@ savefig('optimized_constellation_track.png', [6 4])
 
 fprintf('================ GENETIC ALGORITHM ===============\n')
 
-options = optimoptions('ga', Display = 'iter', FunctionTolerance = 10, UseParallel = true, PopulationSize = 100, MaxGenerations = 300);
-[x_opt_ga, fval_ga] = ga(f_constrained, length(y0) * settings.num_sats, [], [], [], [], lb, ub, [], options);
+cache_path = get_cache_path('genetic_algorithm_results');
 
-fprintf('Genetic algorithm optimal solution found with cost = %.6f\n', fval_ga)
+if exist(cache_path, 'file')
+    fprintf('Loading cached genetic algorithm results from %s...\n', cache_path)
+    load(cache_path, 'x_opt_ga', 'fval_ga')
+else
+
+    options = optimoptions('ga', Display = 'iter', FunctionTolerance = 1, UseParallel = true, PopulationSize = 300, MaxGenerations = 300);
+    [x_opt_ga, fval_ga] = ga(f_constrained, length(y0) * settings.num_sats, [], [], [], [], lb, ub, [], options);
+
+    fprintf('Genetic algorithm optimal solution found with cost = %.6f\n', fval_ga)
+
+    save(cache_path, 'x_opt_ga', 'fval_ga')
+    fprintf('Genetic algorithm optimization completed and results saved to cache.\n')
+end
+
+% Plot the constellation track for the genetic algorithm solution
+[opt_t, opt_track] = propagate_constellation(kep2eci(reshape(x_opt_ga, [], settings.num_sats), constants.Earth.mu), settings);
+plot_constellation_tracks(opt_t, opt_track, settings);
+savefig('ga_constellation_track.png', [6 4])
