@@ -252,7 +252,7 @@ savefig('simplified_cost_contour_local.png', [3 2])
 
 % Simplified problem optimization
 
-options = optimoptions('particleswarm', Display = 'iter', SwarmSize = 300, UseParallel = true);
+options = optimoptions('particleswarm', Display = 'iter', UseParallel = true);
 [x_opt, fval] = particleswarm(f_simplified, 2, [lb(3); lb(4)], [ub(3); ub(4)], options);
 
 fprintf('Optimal solution found: inclination = %.4f rad, RAAN = %.4f rad with cost = %.6f\n', x_opt(1), x_opt(2), fval)
@@ -371,10 +371,21 @@ end
 xlabel('Iteration')
 ylabel('Best Cost')
 grid on
-ylim([best_fval, best_fval * 1.05])
+ylim([best_fval * 0.95, best_fval * 2.5])
 savefig('optimization_convergence.png', [3 2])
 
 % Plot the constellation track for the best solution
 [opt_t, opt_track] = propagate_constellation(kep2eci(reshape(best_x_opt, [], settings.num_sats), constants.Earth.mu), settings);
 plot_constellation_tracks(opt_t, opt_track, settings);
 savefig('optimized_constellation_track.png', [6 4])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GENETIC ALGORITHM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fprintf('================ GENETIC ALGORITHM ===============\n')
+
+options = optimoptions('ga', Display = 'iter', FunctionTolerance = 10, UseParallel = true, PopulationSize = 100, MaxGenerations = 300);
+[x_opt_ga, fval_ga] = ga(f_constrained, length(y0) * settings.num_sats, [], [], [], [], lb, ub, [], options);
+
+fprintf('Genetic algorithm optimal solution found with cost = %.6f\n', fval_ga)
