@@ -15,9 +15,8 @@ function fig = plot_constellation_tracks(t, y, settings)
     load coastlines; %#ok<LOAD>
     plotm(coastlat, coastlon, 'k', LineWidth = 2);
 
-    hold on
-
-    for i = numel(settings.countries)
+    for i = 1:numel(settings.targets)
+        disp(i)
         % Plot country borders
         T = geotable2table(settings.countries{i}, ["Lat", "Lon"]);
         [lat, lon] = polyjoin(T.Lat, T.Lon);

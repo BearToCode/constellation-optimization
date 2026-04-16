@@ -19,8 +19,8 @@ settings = config();
 fprintf('=============== OBJECTIVE FUNCTION ===============\n')
 
 % semi-major axis, eccentricity, inclination, RAAN, argument of perigee, mean anomaly, true anomaly
-lb = repmat([6578e3, 0, deg2rad(46), 0, 0, 0]', settings.num_sats, 1);
-ub = repmat([7178e3, 0.030, deg2rad(180 - 46), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
+lb = repmat([6578e3, 0, deg2rad(15), 0, 0, 0]', settings.num_sats, 1);
+ub = repmat([7178e3, 0.030, deg2rad(180 - 15), deg2rad(360), deg2rad(360), deg2rad(360)]', settings.num_sats, 1);
 
 % Construct the objective function with the given settings
 f = constellation_obj_fun(settings);
