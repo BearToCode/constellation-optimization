@@ -11,7 +11,7 @@ function f = constellation_obj_fun(settings)
     %   f: A function handle that takes the initial state of the constellation and returns the cost based on the coverage over time.
 
     % Nested function to compute the coverage score at a given time t and constellation state y
-    function score = compute_coverage_score(t, y)
+    function [score, points_last_visited_time] = compute_coverage_score(t, y, points_last_visited_time)
         sat_states = reshape(y, 6, settings.num_sats);
         points_covered = zeros(numel(settings.points), 1);
 
@@ -32,7 +32,18 @@ function f = constellation_obj_fun(settings)
             points_covered = sat_points_covered | points_covered;
         end
 
-        score = sum(points_covered);
+        % For each point covered, we add min(settings.revisit_time, t - points_last_visited_time(point)) to the score
+        score = 0;
+
+        for i = 1:numel(settings.points)
+
+            if points_covered(i)
+                time_since_last_visit = t - points_last_visited_time(i);
+                score = score + min(settings.revisit_time, time_since_last_visit);
+                points_last_visited_time(i) = t;
+            end
+
+        end
 
     end
 
@@ -47,11 +58,15 @@ function f = constellation_obj_fun(settings)
         % Integrate the constellation EOM
         [t, y] = propagate_constellation(y0, settings);
 
-        coverage_over_time = arrayfun(@(i) compute_coverage_score(t(i), y(i, :)'), 1:length(t));
+        points_last_visited_time = -Inf(numel(settings.points), 1);
+        score = 0;
 
-        max_coverage = (settings.tf - settings.ti) * numel(settings.points);
-        % Integrate the coverage over time and subtract from the maximum possible coverage to get the cost
-        cost = max_coverage - trapz(t, coverage_over_time);
+        for i = 1:length(t)
+            [instant_score, points_last_visited_time] = compute_coverage_score(t(i), y(i, :)', points_last_visited_time);
+            score = score + instant_score;
+        end
+
+        cost = -score; % We want to maximize the score, so we minimize the negative of it
     end
 
     f = @impl;

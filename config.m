@@ -30,9 +30,12 @@ function settings = config()
 
     settings.num_sats = 3; % Number of satellites of the constellation
     settings.min_elevation = deg2rad(30); % Minimum elevation angle for coverage [rad]
+    settings.revisit_time = 3600; % Maximum allowable gap between coverage events [s]
+    settings.revisit_penalty_weight = 1.0; % Weight of the revisit penalty vs. base coverage cost
 
     fprintf('Number of satellites: \t%d\n', settings.num_sats)
     fprintf('Minimum elevation: \t%.2f deg\n', rad2deg(settings.min_elevation))
+    fprintf('Revisit time: \t\t%.2f h\n', settings.revisit_time / 3600)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % WORLD SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,12 +71,12 @@ function settings = config()
     for i = 1:numel(settings.countries)
         fprintf('Country: \t\t%s\n', settings.targets{i})
         fprintf("Country area: \t\t%.2f km² \n", settings.countries_area{i} / 1e6)
-        fprintf("Points inside country: \t%d\n", sum(inside_geo_points_logical))
     end
 
     total_area = sum(cell2mat(settings.countries_area));
     area_per_point = total_area / sum(inside_geo_points_logical);
 
+    fprintf("Points inside: \t%d\n", sum(inside_geo_points_logical))
     fprintf("Area per point: \t%.2f km²\n", area_per_point / 1e6)
 
     settings.geo_points = inside_geo_points;
